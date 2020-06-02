@@ -38,6 +38,10 @@ let users = [
   },
 ];
 
+server.get('/', (req, res) => {
+  res.json({ message: 'Hello, from index.js' });
+});
+
 server.get('/api/users', (req, res) => {
   users
     ? res.status(200).json(users)
@@ -48,46 +52,49 @@ server.get('/api/users', (req, res) => {
 
 server.get('/api/users/:id', (req, res) => {
   const id = req.params.id;
-  const user = users.find((user) => user.id === Number(id));
+  let user = users.find((user) => user.id == id);
 
-  if (!user) {
+  if (user) {
+    res.status(200).json(user);
+  } else if (!users) {
+    res
+      .status(500)
+      .json({ errorMessage: 'The users information could not be retrieved.' });
+  } else {
     res.status(404).json({
       errorMessage: 'The user with the specified ID does not exist',
     });
-  } else {
-    res.status(200).json(user);
   }
 });
 
 server.post('/api/users', (req, res) => {
   const user = req.body;
 
-  if (!user.name && !user.bio) {
+  if (user) {
+    users.push(user);
+    res.status(201).json(users);
+  } else if (user !== (user.name && user.bio)) {
     res
       .status(400)
       .json({ errorMessage: 'Please provide name and bio for the user.' });
-  } else if (user === null) {
+  } else if (users.includes(user) == false) {
     res.status(500).json({
       errorMessage: 'There was an error while saving the user to the database',
     });
-  } else {
-    users.push(user);
-    res.status(201).json(users);
   }
 });
 
 server.delete('/api/users/:id', (req, res) => {
   const id = req.params.id;
-  const user = users.find((user) => user.id == id);
-  //   users.push(user); =========== do i need this????????????????????????? i didn't think so...
-  if (!user) {
+  let found = users.find((user) => user.id === id);
+  if (!found) {
     res.status(404).json({
       errorMessage: 'The user with the specified ID does not exist.',
     });
-  } else if (user) {
-    res.status(200).json(users);
-  } else {
+  } else if (found) {
     res.status(500).json({ errorMessage: 'The user could not be removed' });
+  } else {
+    res.status(200).json(users);
   }
 });
 
@@ -97,27 +104,22 @@ server.put('/api/users/:id', (req, res) => {
 
   let found = users.find((user) => user.id == id);
 
-  if (!user.name && !user.bio) {
+  if (found) {
+    Object.assign(found, user);
+    res.status(200).json(users);
+  } else if (!found) {
+    res
+      .status(404)
+      .json({ errorMessage: 'The user with the specified ID does not exist.' });
+  } else if (user !== (user.name && user.bio)) {
     res
       .status(400)
       .json({ errorMessage: 'Please provide name and bio for the user.' });
-  } else if (!found) {
-    res.status(404).json({
-      errorMessage: 'The user with the specified ID does not exist.',
-    });
-  }
-  //    else if (
-  //     users.includes((user) => {
-  //       user.name === user.name, user.bio === user.bio;
-  //     })
-  //   ) {
-  //     res.status(500).json({
-  //       errorMessage: 'The user information could not be modified.',
-  //     })}
-  else if (found) {
-    Object.assign(found, user);
-    res.status(200).json(users);
-  } else {
+  } else if (
+    users.includes((user) => {
+      user.name === user.name, user.bio === user.bio;
+    })
+  ) {
     res.status(500).json({
       errorMessage: 'The user information could not be modified.',
     });
