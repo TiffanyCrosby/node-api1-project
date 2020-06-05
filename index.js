@@ -59,10 +59,11 @@ server.get('/api/users/:id', (req, res) => {
   }
 });
 
+
 server.post('/api/users', (req, res) => {
   const user = req.body;
 
-  if (!user.name && !user.bio) {
+  if (user !== (user.name && user.bio)) {
     res
       .status(400)
       .json({ errorMessage: 'Please provide name and bio for the user.' });
@@ -78,45 +79,39 @@ server.post('/api/users', (req, res) => {
 
 server.delete('/api/users/:id', (req, res) => {
   const id = req.params.id;
-  const user = users.find((user) => user.id == id);
-  //   users.push(user); =========== do i need this????????????????????????? i didn't think so...
-  if (!user) {
+  let found = users.filter((user) => user.id === Number(id));
+
+  if(found.length > 0) {
+    delete(users[id-1])
+    res.status(200).json({successMessage: 'Success! You deleted a user', users});
+  }else if (found.length === 0) {
     res.status(404).json({
       errorMessage: 'The user with the specified ID does not exist.',
     });
-  } else if (user) {
-    res.status(200).json(users);
   } else {
     res.status(500).json({ errorMessage: 'The user could not be removed' });
   }
 });
 
+
+
 server.put('/api/users/:id', (req, res) => {
   const id = req.params.id;
   const user = req.body;
+  const found = users.filter((user) => user.id == id);
 
-  let found = users.find((user) => user.id == id);
-
-  if (!user.name && !user.bio) {
+  if (!user.name || !user.bio) {
     res
       .status(400)
       .json({ errorMessage: 'Please provide name and bio for the user.' });
-  } else if (!found) {
+  } else if (found.length === 0) {
     res.status(404).json({
       errorMessage: 'The user with the specified ID does not exist.',
     });
   }
-  //    else if (
-  //     users.includes((user) => {
-  //       user.name === user.name, user.bio === user.bio;
-  //     })
-  //   ) {
-  //     res.status(500).json({
-  //       errorMessage: 'The user information could not be modified.',
-  //     })}
   else if (found) {
-    Object.assign(found, user);
-    res.status(200).json(users);
+    users.push(found, user);
+    res.status(200).json({successMessage: 'Success! You updated the user.', user});
   } else {
     res.status(500).json({
       errorMessage: 'The user information could not be modified.',
