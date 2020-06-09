@@ -110,8 +110,8 @@ server.put('/api/users/:id', (req, res) => {
     });
   }
   else if (found) {
-    users.push(found, user);
-    res.status(200).json({successMessage: 'Success! You updated the user.', user});
+    users.push(id, user);
+    res.status(200).json(user);
   } else {
     res.status(500).json({
       errorMessage: 'The user information could not be modified.',
