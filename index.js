@@ -63,7 +63,7 @@ server.get('/api/users/:id', (req, res) => {
 server.post('/api/users', (req, res) => {
   const user = req.body;
 
-  if (user !== (user.name && user.bio)) {
+  if (!user.name && !user.bio) {
     res
       .status(400)
       .json({ errorMessage: 'Please provide name and bio for the user.' });
